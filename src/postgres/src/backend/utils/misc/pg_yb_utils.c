@@ -317,6 +317,7 @@ bool		yb_read_from_followers = false;
 bool		yb_follower_reads_behavior_before_fixing_20482 = false;
 int32_t		yb_follower_read_staleness_ms = 0;
 bool		yb_default_collation_resolved = false;
+bool		yb_enable_batch_writes_in_txn = false;
 
 bool
 IsYugaByteEnabled()
@@ -4434,6 +4435,17 @@ YBEndOperationsBuffering()
 	 */
 	if (buffering_nesting_level && !--buffering_nesting_level)
 	{
+		/*
+		 * EXPERIMENTAL: When yb_enable_batch_writes_in_txn is enabled and we're
+		 * in a transaction, defer the flush until commit. This batches multiple
+		 * writes into a single RPC. WARNING: This breaks read-your-writes within
+		 * the same transaction.
+		 */
+		if (yb_enable_batch_writes_in_txn && IsTransactionState())
+		{
+			buffering_nesting_level = 1;  /* keep buffering active */
+			return;
+		}
 		HandleYBStatus(YBCPgStopOperationsBuffering());
 	}
 }

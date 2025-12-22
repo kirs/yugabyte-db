@@ -2442,6 +2442,19 @@ static struct config_bool ConfigureNamesBool[] =
 	},
 
 	{
+		{"yb_enable_batch_writes_in_txn", PGC_USERSET, CLIENT_CONN_STATEMENT,
+			gettext_noop("Batch writes across statements in a transaction (EXPERIMENTAL)."),
+			gettext_noop("When enabled, write operations are buffered and flushed together "
+						 "at commit time instead of at each statement boundary. "
+						 "WARNING: This breaks read-your-writes within the same transaction."),
+			GUC_NOT_IN_SAMPLE
+		},
+		&yb_enable_batch_writes_in_txn,
+		false,
+		NULL, NULL, NULL
+	},
+
+	{
 		{"yb_silence_advisory_locks_not_supported_error", PGC_USERSET, LOCK_MANAGEMENT,
 			gettext_noop("Silence the advisory locks error message."),
 			gettext_noop("Enable this with high caution. When enabled, advisory lock requests will silently succeed "
