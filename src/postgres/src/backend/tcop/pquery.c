@@ -826,8 +826,10 @@ PortalRun(Portal portal, long count, bool isTopLevel, bool run_once,
 		 * releasing the portal resources later (for example via a
 		 * CreatePortal() call that drops existing duplicate portal of an
 		 * earlier execution).
+		 *
+		 * EXPERIMENTAL: Skip flush when batching writes across statements.
 		 */
-		if (isTopLevel)
+		if (isTopLevel && !(yb_enable_batch_writes_in_txn && IsTransactionState()))
 			YBFlushBufferedOperations(YBCMakeFlushDebugContextEndOfTopLevelStmt());
 	}
 	PG_CATCH();
